@@ -2,7 +2,7 @@
 import os, json, threading, time
 from kafka import KafkaConsumer
 from typing import Callable
-from src.secrets import get_redis_config
+from src.secret import get_redis_config
 import redis
 
 KAFKA_BOOTSTRAP = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:9092')
