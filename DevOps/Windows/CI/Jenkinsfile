@@ -17,20 +17,20 @@ pipeline {
         stage('Clone github repository') {
             steps {
                 cleanWs()
-                bat 'chcp 65001 && git clone -b develop https://github.com/Lammirea/big_data_lab_three.git'
+                bat 'chcp 65001 && git clone -b develop https://github.com/Lammirea/big_data_lab_four.git'
             }
         }
 
         stage('Checkout repo dir') {
             steps {
-                bat 'chcp 65001 && cd big_data_lab_three && dir'
+                bat 'chcp 65001 && cd big_data_lab_four && dir'
             }
         }
 
         stage('Decrypt ansible-vault files') {
             // Делаем расшифровку один раз для всего pipeline (тесты + docker-compose)
             steps {
-                dir('big_data_lab_three') {
+                dir('big_data_lab_four') {
                     // Рекомендуемый вариант: используем Secret file (credentialsId = 'ansible-vault-pass-file')
                     withCredentials([file(credentialsId: 'vault-pass-id', variable: 'VAULT_PASS_FILE')]) {
                         bat '''
@@ -71,7 +71,7 @@ pipeline {
 
         stage('Run Unit Tests (in Docker)') {
             steps {
-                dir('big_data_lab_three') {
+                dir('big_data_lab_four') {
                 bat '''
                     chcp 65001
                     docker run --rm -v "%cd%":/app -w /app python:3.11-bullseye bash -lc " \
@@ -97,10 +97,10 @@ pipeline {
             steps {
                 script {
                     try {
-                        bat 'chcp 65001 && cd big_data_lab_three && docker-compose build'
+                        bat 'chcp 65001 && cd big_data_lab_four && docker-compose build'
                     }
                     finally {
-                        dir('big_data_lab_three') {
+                        dir('big_data_lab_four') {
                             withCredentials([
                                 string(credentialsId: 'redis-password', variable: 'REDIS_PASSWORD'),
                                 string(credentialsId: 'redis-host', variable: 'REDIS_HOST'),
@@ -125,10 +125,10 @@ pipeline {
 
         stage('Checkout container logs') {
             steps {
-                dir("big_data_lab_three") {
+                dir("big_data_lab_four") {
                     bat '''
                         docker-compose up -d
-                        for /f %%i in ('docker ps -qf "name=^big_data_lab_three-web-1"') do set containerId=%%i
+                        for /f %%i in ('docker ps -qf "name=^big_data_lab_four-web-1"') do set containerId=%%i
                         echo %containerId%
                         IF "%containerId%" == "" (
                             echo "No container running"
@@ -143,7 +143,7 @@ pipeline {
 
         stage('Checkout coverage report') {
             steps {
-                dir('big_data_lab_three') {
+                dir('big_data_lab_four') {
                 // просто вывести краткую сводку
                 bat 'chcp 65001 && type coverage.xml || echo "coverage.xml not found"'
                 // или лучше: опубликовать html через плагин Publish HTML
@@ -160,7 +160,7 @@ pipeline {
 
         stage('Push'){
             steps{
-                bat 'chcp 65001 && docker push derelia/big_data_lab_three:latest'
+                bat 'chcp 65001 && docker push derelia/big_data_lab_four:latest'
             }
         }
     }
@@ -169,11 +169,11 @@ pipeline {
         always {
             bat '''
                 chcp 65001
-                docker stop big_data_lab_three-web-1 || exit /b 0
-                docker rm big_data_lab_three-web-1 || exit /b 0
+                docker stop big_data_lab_four-web-1 || exit /b 0
+                docker rm big_data_lab_four-web-1 || exit /b 0
                 docker stop redis_db || exit /b 0
                 docker rm redis_db || exit /b 0
-                docker rmi derelia/big_data_lab_three:latest || exit /b 0
+                docker rmi derelia/big_data_lab_four:latest || exit /b 0
                 docker rmi redis:latest || exit /b 0
                 docker logout
             '''
