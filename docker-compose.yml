@@ -30,6 +30,7 @@ services:
 
   web:
     build: .
+    image: derelia/big_data_lab_four:latest
     depends_on:
       - kafka
       - redis
@@ -42,15 +43,3 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
-    image: derelia/big_data_lab_four:latest
-
-  consumer:
-    build:
-      context: ./consumer
-    environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_TOPIC=predictions
-      - HANDLER_ENDPOINT=http://web:8090/receive_result
-    depends_on:
-      - kafka
-      - web
