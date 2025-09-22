@@ -1,4 +1,3 @@
-# src/secrets.py
 import os
 from typing import Dict, Optional
 
@@ -18,16 +17,16 @@ def _read_env_file(path: str) -> Dict[str,str]:
 def get_redis_config() -> Dict[str, Optional[str]]:
     """
     Priority:
-     1) big_data_lab_three/.env (created by ansible-vault decrypt)
-     2) /run/secrets/* files (docker secrets)
+     1) big_data_lab_four/.env (created by ansible-vault decrypt)
+     2) /run/secret/* files (docker secrets)
      3) environment variables
     """
     # 1) repo .env (path relative to container working dir)
     possible_paths = [
-        os.path.join(os.getcwd(), 'big_data_lab_three', '.env'),
+        os.path.join(os.getcwd(), 'big_data_lab_four', '.env'),
         os.path.join(os.getcwd(), '.env'),
-        '/etc/secrets/redis_config.json',
-        '/run/secrets/redis_password'  # if separate
+        '/etc/secret/redis_config.json',
+        '/run/secret/redis_password'  # if separate
     ]
     env_map = {}
     for p in possible_paths:
@@ -38,7 +37,7 @@ def get_redis_config() -> Dict[str, Optional[str]]:
     # 2) file-based secrets (individual)
     # if separate files exist, read them
     for secret_name in ('REDIS_HOST','REDIS_PORT','REDIS_PASSWORD','REDIS_DB'):
-        path = f'/run/secrets/{secret_name.lower()}'
+        path = f'/run/secret/{secret_name.lower()}'
         if os.path.exists(path):
             with open(path, 'r', encoding='utf-8') as f:
                 env_map[secret_name] = f.read().strip()
